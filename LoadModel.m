@@ -43,12 +43,18 @@ for(i=1:length(model.mets))
     met_line_number = find(idx);
     if(strcmp(tM(met_line_number,5),'Extra-organism'))
         model.met_extra=[model.met_extra;1];
+        % extra-organism labeling
+        external_labeling = strsplit(tM{met_line_number,6},'/');
+        model.met_extra_labeling{i}.atom_idv=str2num(external_labeling{1});
+        model.met_extra_labeling{i}.enrichment=str2num(external_labeling{2});
     else
         model.met_extra=[model.met_extra;0];
+        model.met_extra_labeling{i} = [];
     end   
 end
 
 model.mappings_carbon = cell(0);
+model.measured_net_fluxes=cell(0);
 for(i=1:length(model.rxns))
     % init all matrices for carbon mapping
     model.mappings_carbon{end+1}.graph_r.node_info=[];
@@ -109,4 +115,17 @@ for(i=1:length(model.rxns))
         end        
     end    
     model.mappings_carbon{end}.mapping_p(product_mapping,1)=reactant_mapping';
+    
+    % load measured fluxes
+    
+    if(~isnan(dR(i,11)))
+        model.measured_net_fluxes{end+1}.HF.mean    = dR(i,11);
+        model.measured_net_fluxes{end}.HF.std     = dR(i,12);
+        model.measured_net_fluxes{end}.LF.mean    = dR(i,13);
+        model.measured_net_fluxes{end}.LF.std     = dR(i,14);
+    else
+        model.measured_net_fluxes{end+1}=[];
+    end
+    
 end
+
